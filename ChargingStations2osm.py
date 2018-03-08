@@ -108,7 +108,7 @@ def extract_data_from_kml(path, output_file):
         logger.debug("Writing to: %s" % output_file)
         json.dump(export_artifact, outfile)
 
-    logger.debug("Success! Output file contains %s nodes." % len(features))
+    logger.debug("Success! Output file contains %s points." % len(features))
 
 
 if __name__ == "__main__":
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     parser = argparse.ArgumentParser(
-        description='Convert the Chargy KML Dataset into OSM Nodes')
+        description='Convert the Chargy KML Dataset into GeoJSON Points')
     parser.add_argument('infile', metavar='INFILE',
                         help='KML File from Chargy',
                         type=lambda x: is_valid_file(parser, x))
