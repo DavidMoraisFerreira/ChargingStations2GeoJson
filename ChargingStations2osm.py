@@ -44,7 +44,7 @@ def build_single_feature(station):
         "ns:ExtendedData/ns:Data[@name='chargingdevice']/ns:value", ns)
 
     if(len(charging_devices) > 1):
-        logger.info("Station %s is actually %s stations marked as 1, tagging accordingly." % (
+        logger.info("Charging Station %s contains %s charging points, tagging as 1 big charging station." % (
             station_name, len(charging_devices)))
 
     sum_connectors = 0
