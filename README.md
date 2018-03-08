@@ -61,6 +61,7 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
             ]
          }
       }
+   ]
 }
 ```
 ## How to use
