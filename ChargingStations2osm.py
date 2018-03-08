@@ -33,12 +33,12 @@ def build_single_feature(station):
 
     properties["amenity"] = "charging_station"
     properties['name'] = station_name
-    properties["amperage"] = 32  # TODO: Is this correct?
+    #properties["amperage"] = 32  # TODO: Is this correct?
     properties["operator"] = "Chargy"
+    properties["opening_hours"] = "24/7"
     properties["car"] = "yes"
     properties["phone"] = "+352 80062020"
     properties["authentication:membership_card"] = "yes"
-    properties["authentication:membership_card"] = "mKaart"
 
     charging_devices = station.findall(
         "ns:ExtendedData/ns:Data[@name='chargingdevice']/ns:value", ns)
