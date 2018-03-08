@@ -75,7 +75,7 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
 
 usage: ChargingStations2osm.py [-h] INFILE [OUTFILE]
 
-Convert the Chargy KML Dataset into OSM Nodes
+Convert the Chargy KML Dataset into GeoJSON Points
 
 positional arguments:
   INFILE      KML File from Chargy
