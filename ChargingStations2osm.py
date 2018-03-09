@@ -33,8 +33,13 @@ def build_single_feature(station):
 
     properties["amenity"] = "charging_station"
     properties['name'] = station_name
-    #properties["amperage"] = 32  # TODO: Is this correct?
+
+    # properties["amperage"] = 32  # TODO: Is this correct?
+
+    # TODO: Only valid if name does not begin with Chargy Ok
     properties["operator"] = "Chargy"
+
+    properties["brand"] = "Chargy"
     properties["opening_hours"] = "24/7"
     properties["car"] = "yes"
     properties["phone"] = "+352 80062020"
@@ -44,7 +49,7 @@ def build_single_feature(station):
         "ns:ExtendedData/ns:Data[@name='chargingdevice']/ns:value", ns)
 
     if(len(charging_devices) > 1):
-        logger.info("Charging Station %s contains %s charging points, tagging as 1 big charging station." % (
+        logger.info("Charging Station '%s' contains '%s' charging points, tagging as 1 charging station." % (
             station_name, len(charging_devices)))
 
     sum_connectors = 0
@@ -56,25 +61,41 @@ def build_single_feature(station):
 
     properties["ref"] = ";".join(refs)
 
+    raw_station_description = station.find("ns:description", ns).text
+    output_wattage_search = re.search(
+        r"(\d+)kW", raw_station_description, flags=re.IGNORECASE)
+    if not output_wattage_search:
+        logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Skipping this entry! Description is: '%s'" % (
+            station_name, raw_station_description))
+        return None
+    else:
+        output_wattage_value = int(output_wattage_search.group(1))
+
+    for chargingPoint in json_device["chargingPointList"]:
+        if chargingPoint["maxchspeed"] != output_wattage_value:
+            logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'. Skipping this entry!" % (
+                json_device["name"], output_wattage_value, chargingPoint["maxchspeed"]))
+            return None
+
+    properties["socket:type2:output"] = ("%skW" % output_wattage_value)
+
     countChargingPoints = int(station.find(
         "ns:ExtendedData/ns:Data[@name='CPnum']/ns:value", ns).text)
 
     if countChargingPoints != sum_connectors:
-        logger.error("Charging point count mismatch for %s! Total reported count is %s, summed description count is %s. Skipping this entry!" % (
+        logger.error("Charging point count mismatch for '%s'. Total reported count is %s, summed description count is %s. Skipping this entry!" % (
             json_device["name"], countChargingPoints, sum_connectors))
         return None
 
+    if not re.search(r"Type 2 connector", raw_station_description, flags=re.IGNORECASE):
+        logger.error("Type 2 was not found for station '%s'. Skipping this entry. Description is: '%s'" % (
+            station_name, raw_station_description))
+        return None
+
     properties["socket:type2"] = countChargingPoints
+
+    # TODO: Check raw_station_description for count of connectors
     properties["capacity"] = countChargingPoints
-
-    expected_output = 22  # TODO: Extract this from the html description
-    for chargingPoint in json_device["chargingPointList"]:
-        if chargingPoint["maxchspeed"] != expected_output:
-            logger.error("'propertiesectric' Power Output mismatch for %s, was expecting %s and got %s. Skipping this entry!" % (
-                json_device["name"], expected_output, chargingPoint["maxchspeed"]))
-            return None
-
-    properties["socket:type2:output"] = ("%skW" % expected_output)
 
     geometry = OrderedDict()
     geometry["type"] = "Point"
