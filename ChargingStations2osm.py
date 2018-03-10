@@ -26,20 +26,30 @@ def build_single_feature(station):
     single_feature["type"] = "Feature"
     properties = {}
     station_name = station.find("ns:name", ns).text
+    #print(station_name)
+    #if station_name.startswith("Chargy Ok"):
+        # This is a charging station operated by another company, but compatible with Chargy
+        # Ideal naming scheme is <Chargy Ok> - <Operator> - <Location>, sometimes the separator between <Operator> and <Location> is missing.
+    #    split_name_by_minus = re.search(
+    #        r"(.*?)\s\-\s(.*?)\s\-\s(.*)", station_name, flags=re.IGNORECASE)
+    #    if split_name_by_minus:
+    #        properties["operator"] = split_name_by_minus.group(2)
+    #    else:
+    #        logger.warning(
+    #            "Couldn't find operator for '%s'. Leaving operator empty." % station_name)
+    #else:
+    #    properties["operator"] = "Chargy"
+    properties["operator"] = "Chargy"
+    
     visibility = int(station.find("ns:visibility", ns).text)
     if visibility != 1:
-        logger.warning("Node '%s', visibility flag is not 1" % station_name)
+        logger.warning("Node '%s', visibility flag != 1." % station_name)
         properties["operational_status"] = "closed"
-
+    
     properties["amenity"] = "charging_station"
     properties['name'] = station_name
-
-    # properties["amperage"] = 32  # TODO: Is this correct?
-
-    # TODO: Only valid if name does not begin with Chargy Ok
-    properties["operator"] = "Chargy"
-
     properties["brand"] = "Chargy"
+    
     properties["opening_hours"] = "24/7"
     properties["car"] = "yes"
     properties["phone"] = "+352 80062020"
@@ -58,7 +68,7 @@ def build_single_feature(station):
         json_device = json.loads(single_device.text)
         sum_connectors += json_device["numberOfConnectors"]
         refs.append(json_device["name"])
-
+    # TODO: Check if all charging points are offline ?
     properties["ref"] = ";".join(refs)
 
     raw_station_description = station.find("ns:description", ns).text
