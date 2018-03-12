@@ -27,7 +27,7 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
     </ExtendedData>
     <Point>
         <altitudeMode>clampToGround</altitudeMode>
-        <coordinates>PLACEHOLDER_COORDINATE_1,PLACEHOLDER_COORDINATE_2</coordinates>
+        <coordinates>123,456</coordinates>
     </Point>
 </Placemark>
 <!-- Left out some data to keep it short -->
@@ -58,8 +58,8 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
          "geometry":{
             "type":"Point",
             "coordinates":[
-               PLACEHOLDER_COORDINATE_1,
-               PLACEHOLDER_COORDINATE_2
+               123,
+               456
             ]
          }
       }
