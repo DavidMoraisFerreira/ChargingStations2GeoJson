@@ -58,6 +58,7 @@ def build_single_feature(station):
     charging_devices = station.findall(
         "ns:ExtendedData/ns:Data[@name='chargingdevice']/ns:value", ns)
 
+    properties["devices"] = len(charging_devices)
     if(len(charging_devices) > 1):
         logger.info("Charging Station '%s' contains '%s' charging points, tagging as 1 charging station." % (
             station_name, len(charging_devices)))
