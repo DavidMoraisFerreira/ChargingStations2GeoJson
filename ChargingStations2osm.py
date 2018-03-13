@@ -5,7 +5,10 @@ import re
 import logging
 import os
 import xml.etree.cElementTree as ET
+from utils.GeoJsonBuilder import GeoJsonBuilder
 from collections import OrderedDict
+
+ns = {}
 
 
 def is_valid_file(parser, arg):
@@ -26,10 +29,10 @@ def build_single_feature(station):
     single_feature["type"] = "Feature"
     properties = {}
     station_name = station.find("ns:name", ns).text
-    #print(station_name)
-    #if station_name.startswith("Chargy Ok"):
-        # This is a charging station operated by another company, but compatible with Chargy
-        # Ideal naming scheme is <Chargy Ok> - <Operator> - <Location>, sometimes the separator between <Operator> and <Location> is missing.
+    # print(station_name)
+    # if station_name.startswith("Chargy Ok"):
+    # This is a charging station operated by another company, but compatible with Chargy
+    # Ideal naming scheme is <Chargy Ok> - <Operator> - <Location>, sometimes the separator between <Operator> and <Location> is missing.
     #    split_name_by_minus = re.search(
     #        r"(.*?)\s\-\s(.*?)\s\-\s(.*)", station_name, flags=re.IGNORECASE)
     #    if split_name_by_minus:
@@ -37,19 +40,19 @@ def build_single_feature(station):
     #    else:
     #        logger.warning(
     #            "Couldn't find operator for '%s'. Leaving operator empty." % station_name)
-    #else:
+    # else:
     #    properties["operator"] = "Chargy"
     properties["operator"] = "Chargy"
-    
+
     visibility = int(station.find("ns:visibility", ns).text)
     if visibility != 1:
         logger.warning("Node '%s', visibility flag != 1." % station_name)
         properties["operational_status"] = "closed"
-    
+
     properties["amenity"] = "charging_station"
     properties['name'] = station_name
     properties["brand"] = "Chargy"
-    
+
     properties["opening_hours"] = "24/7"
     properties["car"] = "yes"
     properties["phone"] = "+352 80062020"
@@ -70,7 +73,7 @@ def build_single_feature(station):
         sum_connectors += json_device["numberOfConnectors"]
         refs.append(json_device["name"])
     # TODO: Check if all charging points are offline ?
-    properties["ref"] = ";".join(refs)
+    properties["ref:chargy"] = ";".join(refs)
 
     raw_station_description = station.find("ns:description", ns).text
     output_wattage_search = re.search(
@@ -114,10 +117,15 @@ def build_single_feature(station):
     geometry["coordinates"] = float(lon), float(lat)
     single_feature["properties"] = properties
     single_feature["geometry"] = geometry
+
     return single_feature
 
 
-def extract_data_from_kml(path, output_file):
+def extract_data_from_kml(path, output_file, logger=None):
+    if logger is None:
+        logging.basicConfig(level=logging.DEBUG)
+        logger = logging.getLogger(__name__)
+
     logger.debug("Reading File: %s" % path)
     doc = ET.parse(path)
     root = doc.getroot()
@@ -132,9 +140,7 @@ def extract_data_from_kml(path, output_file):
         if computed_feature is not None:
             features.append(computed_feature)
 
-    export_artifact = OrderedDict()
-    export_artifact["type"] = "FeatureCollection"
-    export_artifact["features"] = features
+    export_artifact = GeoJsonBuilder.create_geojson(features)
 
     with open(output_file, "w") as outfile:
         logger.debug("Writing to: %s" % output_file)
@@ -144,8 +150,6 @@ def extract_data_from_kml(path, output_file):
 
 
 if __name__ == "__main__":
-    ns = {}
-
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger(__name__)
 
@@ -161,5 +165,4 @@ if __name__ == "__main__":
                         help='Overrides the default filename for the exported GeoJSON file')
 
     args = parser.parse_args()
-
-    extract_data_from_kml(args.infile, args.outfile)
+    extract_data_from_kml(args.infile, args.outfile, logger)
