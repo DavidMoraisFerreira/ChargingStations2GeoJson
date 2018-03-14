@@ -1,4 +1,4 @@
- ChargingStations2osm
+ ChargingStations2osm [![Build Status](https://travis-ci.org/DavidMoraisFerreira/ChargingStations2osm.svg?branch=master)](https://travis-ci.org/DavidMoraisFerreira/ChargingStations2osm)
 ==================
 
 Converts the Dataset of public EV charging stations in Luxembourg into a format (GeoJSON) that is more suited for importing in [OpenStreetMap](https://www.openstreetmap.org). This Dataset is provided by [Chargy.lu](https://chargy.lu/) and published under the Creative Commons Zero License on the [Luxembourgish Data Platform](https://data.public.lu/en/datasets/bornes-de-chargement-publiques-pour-voitures-electriques/).
