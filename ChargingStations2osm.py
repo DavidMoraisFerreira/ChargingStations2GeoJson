@@ -4,9 +4,15 @@ import json
 import re
 import logging
 import os
+import sys
 import xml.etree.cElementTree as ET
 from utils.GeoJsonBuilder import GeoJsonBuilder
 from collections import OrderedDict
+
+ns = {}
+ch = logging.StreamHandler(sys.stdout)
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 def is_valid_file(parser, arg):
@@ -145,11 +151,7 @@ def process_charging_station(station):
     return GeoJsonBuilder.create_feature(properties, float(lon), float(lat))
 
 
-def extract_data_from_kml(path, output_file, logger=None):
-    if logger is None:
-        logging.basicConfig(level=logging.DEBUG)
-        logger = logging.getLogger(__name__)
-
+def extract_data_from_kml(path, output_file):
     logger.debug("Reading File: %s" % path)
     doc = ET.parse(path)
     root = doc.getroot()
@@ -174,8 +176,6 @@ def extract_data_from_kml(path, output_file, logger=None):
 
 
 if __name__ == "__main__":
-    ns = {}
-
     parser = argparse.ArgumentParser(
         description='Convert the Chargy KML Dataset into GeoJSON Points')
     parser.add_argument('infile', metavar='INFILE',
@@ -188,9 +188,11 @@ if __name__ == "__main__":
                         help='Overrides the default filename for the exported GeoJSON file')
 
     parser.add_argument("-v", "--verbose", action="store_const", dest="loglevel",
-                        help="Override default loglevel", const=logging.INFO)
+                        help="Override default loglevel", const=logging.DEBUG)
 
     args = parser.parse_args()
-    logging.basicConfig(level=args.loglevel)
-    logger = logging.getLogger(__name__)
-    extract_data_from_kml(args.infile, args.outfile, logger)
+
+    if args.loglevel is not None:
+        logger.setLevel(args.loglevel)
+
+    extract_data_from_kml(args.infile, args.outfile)

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:xal="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <Document>
+        <name>Test Stations</name>
+        <Style id="AVAILABLE">
+            <IconStyle>
+                <scale>1.0</scale>
+                <heading>0.0</heading>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/paddle/grn-circle.png</href>
+                    <refreshInterval>0.0</refreshInterval>
+                    <viewRefreshTime>0.0</viewRefreshTime>
+                    <viewBoundScale>0.0</viewBoundScale>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="UNAVAILABLE">
+            <IconStyle>
+                <scale>1.0</scale>
+                <heading>0.0</heading>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/paddle/red-circle.png</href>
+                    <refreshInterval>0.0</refreshInterval>
+                    <viewRefreshTime>0.0</viewRefreshTime>
+                    <viewBoundScale>0.0</viewBoundScale>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Placemark>
+            <name>PLACEHOLDER_NAME</name>
+            <visibility>1</visibility>
+            <address>PLACEHOLDER_ADDRESS</address>
+            <description>&lt;span&gt;&lt;b&gt;2&lt;/b&gt; connectors with 22kW and Type 2 connector&lt;span&gt;&lt;br/&gt;&lt;span&gt;&lt;b&gt;2&lt;/b&gt; available connectors&lt;span&gt;&lt;br/&gt;&lt;span&gt;&lt;b&gt;0&lt;/b&gt; occupied connectors&lt;span&gt;&lt;br/&gt;</description>
+            <styleUrl>#AVAILABLE</styleUrl>
+            <ExtendedData>
+                <Data name="CPnum">
+                    <displayName>Number of chargingpoints</displayName>
+                    <value>3</value>
+                </Data>
+ <Data name="chargingdevice">
+                    <displayName>Charging device</displayName>
+                    <value>{"id":1234,"name":"CP5008","numberOfConnectors":2,"connectors":[{"id":51266,"name":"CP5008 - 1","maxchspeed":22.0,"connector":1,"description":"AVAILABLE"},{"id":1234,"name":"CP5008","numberOfConnectors":2,"connectors":[{"id":51266,"name":"CP5008 - 1","maxchspeed":22.0,"connector":1,"description":"AVAILABLE"},{"id":52603,"name":"CP5008 - 2","maxchspeed":22.0,"connector":2,"description":"AVAILABLE"}]}</value>
+                </Data>
+            </ExtendedData>
+            <Point>
+                <altitudeMode>clampToGround</altitudeMode>
+                <coordinates>5.8,49.8</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
