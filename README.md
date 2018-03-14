@@ -41,19 +41,19 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
       {
          "type":"Feature",
          "properties":{
+            "operator":"Chargy",
+            "amenity":"charging_station",
+            "name":"PLACEHOLDER_NAME",
+            "brand":"Chargy",
+            "opening_hours":"24/7",
+            "car":"yes",
+            "phone":"PLACEHOLDER_PHONE",
             "authentication:membership_card":"yes",
             "devices":1,
-            "operator":"Chargy",
-            "socket:type2":2,
-            "opening_hours":"24/7",
+            "ref:chargy":"1763",
             "socket:type2:output":"22kW",
-            "capacity":2,
-            "name":"PLACEHOLDER_NAME",
-            "ref":"PLACEHOLDER_ID",
-            "brand":"Chargy",
-            "phone":"PLACEHOLDER_PHONE",
-            "amenity":"charging_station",
-            "car":"yes"
+            "socket:type2":2,
+            "capacity":2
          },
          "geometry":{
             "type":"Point",

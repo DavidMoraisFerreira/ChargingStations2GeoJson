@@ -8,8 +8,6 @@ import xml.etree.cElementTree as ET
 from utils.GeoJsonBuilder import GeoJsonBuilder
 from collections import OrderedDict
 
-ns = {}
-
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -24,9 +22,38 @@ def get_namespace(element):
     raise ValueError("Fatal: Couldn't identify the namespace!")
 
 
-def build_single_feature(station):
-    single_feature = OrderedDict()
-    single_feature["type"] = "Feature"
+def process_charging_device(charging_point, station_name, output_wattage_value):
+    json_device = json.loads(charging_point.text)
+    sum_connectors = json_device["numberOfConnectors"]
+    charging_point_id = json_device["id"]
+    charging_point_name = json_device["name"].strip()
+
+    if re.search(r"\s", charging_point_name):
+        logger.warning("Charging point name '%s' probably contains some text, make sure to verify this before importing. (Belongs to charging station: '%s')" % (
+            charging_point_name, station_name))
+    if not charging_point_name.startswith("CP"):
+        logger.warning("Charging point name '%s' does not have a chargy Id (CPabcd), make sure to verify this before importing. (Belong to charging station: '%s')" %
+                       (charging_point_name, station_name))
+
+    # Check contents of the charging points
+    charging_points_status = 0
+    for chargingPoint in json_device["connectors"]:
+        charging_point_description = chargingPoint["description"].strip()
+
+        if charging_point_description.upper() != "OFFLINE":
+            charging_points_status += 1
+
+        # Check power output
+        if chargingPoint["maxchspeed"] != output_wattage_value:
+            logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'." % (
+                charging_point_name, output_wattage_value, chargingPoint["maxchspeed"]))
+            raise ValueError("Power Output Error!")
+
+    count_connectors_not_offline = charging_points_status
+    return sum_connectors, charging_point_id, charging_point_name, count_connectors_not_offline
+
+
+def process_charging_station(station):
     properties = {}
     station_name = station.find("ns:name", ns).text
     # print(station_name)
@@ -52,12 +79,13 @@ def build_single_feature(station):
     properties["amenity"] = "charging_station"
     properties['name'] = station_name
     properties["brand"] = "Chargy"
-
+    properties["operator"] = "Chargy"
     properties["opening_hours"] = "24/7"
     properties["car"] = "yes"
     properties["phone"] = "+352 80062020"
     properties["authentication:membership_card"] = "yes"
 
+    # Each charging station can have multiple charging points
     charging_devices = station.findall(
         "ns:ExtendedData/ns:Data[@name='chargingdevice']/ns:value", ns)
 
@@ -66,30 +94,33 @@ def build_single_feature(station):
         logger.info("Charging Station '%s' contains '%s' charging points, tagging as 1 charging station." % (
             station_name, len(charging_devices)))
 
-    sum_connectors = 0
-    refs = []
-    for single_device in charging_devices:
-        json_device = json.loads(single_device.text)
-        sum_connectors += json_device["numberOfConnectors"]
-        refs.append(json_device["name"])
-    # TODO: Check if all charging points are offline ?
-    properties["ref:chargy"] = ";".join(refs)
-
+    # Get Output in Watts from Description
     raw_station_description = station.find("ns:description", ns).text
     output_wattage_search = re.search(
         r"(\d+)kW", raw_station_description, flags=re.IGNORECASE)
     if not output_wattage_search:
-        logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Skipping this entry! Description is: '%s'" % (
+        logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Description is: '%s'" % (
             station_name, raw_station_description))
-        return None
+        raise ValueError("Power Output Error!")
     else:
         output_wattage_value = int(output_wattage_search.group(1))
 
-    for chargingPoint in json_device["chargingPointList"]:
-        if chargingPoint["maxchspeed"] != output_wattage_value:
-            logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'. Skipping this entry!" % (
-                json_device["name"], output_wattage_value, chargingPoint["maxchspeed"]))
-            return None
+    # Process all the charging points
+    sum_connectors = 0
+    refs = []
+    count_connectors_not_offline = 0
+    for device in charging_devices:
+        r_sum_connectors, r_charging_point_id, charging_point_name, r_cnt_connectors_offline = process_charging_device(
+            device, station_name, output_wattage_value)
+        sum_connectors += r_sum_connectors
+        count_connectors_not_offline += r_cnt_connectors_offline
+        refs.append(str(r_charging_point_id))
+
+    properties["ref:chargy"] = ";".join(refs)
+    if count_connectors_not_offline == 0:
+        logger.warning(
+            "Charging station '%s' is OFFLINE (All sockets are OFFLINE)" % station_name)
+        properties["operational_status"] = "closed"
 
     properties["socket:type2:output"] = ("%skW" % output_wattage_value)
 
@@ -97,28 +128,21 @@ def build_single_feature(station):
         "ns:ExtendedData/ns:Data[@name='CPnum']/ns:value", ns).text)
 
     if countChargingPoints != sum_connectors:
-        logger.error("Charging point count mismatch for '%s'. Total reported count is %s, summed description count is %s. Skipping this entry!" % (
-            json_device["name"], countChargingPoints, sum_connectors))
-        return None
+        logger.error("Charging point count mismatch for '%s'. Total reported count is %s, summed description count is %s." % (
+            charging_point_name, countChargingPoints, sum_connectors))
+        raise ValueError("Charging Point Count mismatch!")
 
     if not re.search(r"Type 2 connector", raw_station_description, flags=re.IGNORECASE):
-        logger.error("Type 2 was not found for station '%s'. Skipping this entry. Description is: '%s'" % (
+        logger.error("Type 2 was not found for station '%s'. Description is: '%s'" % (
             station_name, raw_station_description))
-        return None
+        raise ValueError("Connector Type Error! Was expecting Type 2.")
 
     properties["socket:type2"] = countChargingPoints
-
-    # TODO: Check raw_station_description for count of connectors
     properties["capacity"] = countChargingPoints
 
-    geometry = OrderedDict()
-    geometry["type"] = "Point"
     lon, lat = station.find("ns:Point/ns:coordinates", ns).text.split(",")
-    geometry["coordinates"] = float(lon), float(lat)
-    single_feature["properties"] = properties
-    single_feature["geometry"] = geometry
 
-    return single_feature
+    return GeoJsonBuilder.create_feature(properties, float(lon), float(lat))
 
 
 def extract_data_from_kml(path, output_file, logger=None):
@@ -136,7 +160,7 @@ def extract_data_from_kml(path, output_file, logger=None):
 
     features = []
     for station in stations:
-        computed_feature = build_single_feature(station)
+        computed_feature = process_charging_station(station)
         if computed_feature is not None:
             features.append(computed_feature)
 
@@ -150,8 +174,7 @@ def extract_data_from_kml(path, output_file, logger=None):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger(__name__)
+    ns = {}
 
     parser = argparse.ArgumentParser(
         description='Convert the Chargy KML Dataset into GeoJSON Points')
@@ -164,5 +187,10 @@ if __name__ == "__main__":
                             '%Y%m%d_%H%M%S'),
                         help='Overrides the default filename for the exported GeoJSON file')
 
+    parser.add_argument("-v", "--verbose", action="store_const", dest="loglevel",
+                        help="Override default loglevel", const=logging.INFO)
+
     args = parser.parse_args()
+    logging.basicConfig(level=args.loglevel)
+    logger = logging.getLogger(__name__)
     extract_data_from_kml(args.infile, args.outfile, logger)
