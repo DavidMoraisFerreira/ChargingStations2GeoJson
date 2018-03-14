@@ -75,14 +75,15 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
 
 > python3 ChargingStations2osm.py --help
 
-usage: ChargingStations2osm.py [-h] INFILE [OUTFILE]
+usage: ChargingStations2osm.py [-h] [-v] INFILE [OUTFILE]
 
 Convert the Chargy KML Dataset into GeoJSON Points
 
 positional arguments:
-  INFILE      KML File from Chargy
-  OUTFILE     Overrides the default filename for the exported GeoJSON file
+  INFILE         KML File from Chargy
+  OUTFILE        Overrides the default filename for the exported GeoJSON file
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help     show this help message and exit
+  -v, --verbose  Override default loglevel
 ```
