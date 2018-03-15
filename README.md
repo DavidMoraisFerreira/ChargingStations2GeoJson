@@ -68,11 +68,8 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
 ```
 ## How to use
 
+### Preparing the data
 ```
-> python3 ChargingStations2osm.py input_file.kml
-
-> python3 ChargingStations2osm.py input_file.kml output_file.geojson
-
 > python3 ChargingStations2osm.py --help
 
 usage: ChargingStations2osm.py [-h] [-v] INFILE [OUTFILE]
@@ -86,4 +83,10 @@ positional arguments:
 optional arguments:
   -h, --help     show this help message and exit
   -v, --verbose  Override default loglevel
+
+> python3 ChargingStations2osm.py input_file.kml output_file.geojson
+
+> pip install conflate
+
+> conflate conflate_charging_stations_luxembourg.py --source output_file.geojson -c changes_preview.geojson -o upload_preview.osm
 ```
