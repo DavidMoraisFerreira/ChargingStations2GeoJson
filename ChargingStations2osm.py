@@ -61,7 +61,7 @@ def process_charging_device(charging_point, station_name, output_wattage_value):
 
 def process_charging_station(station):
     properties = {}
-    station_name = station.find("ns:name", ns).text
+    station_name = ' '.join(station.find("ns:name", ns).text.split())
     # print(station_name)
     # if station_name.startswith("Chargy Ok"):
     # This is a charging station operated by another company, but compatible with Chargy
