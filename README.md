@@ -1,4 +1,4 @@
- ChargingStations2osm [![Build Status](https://travis-ci.org/DavidMoraisFerreira/ChargingStations2osm.svg?branch=master)](https://travis-ci.org/DavidMoraisFerreira/ChargingStations2osm)
+ ChargingStations2GeoJson [![Build Status](https://travis-ci.org/DavidMoraisFerreira/ChargingStations2GeoJson.svg?branch=master)](https://travis-ci.org/DavidMoraisFerreira/ChargingStations2GeoJson)
 ==================
 
 Converts the Dataset of public EV charging stations in Luxembourg into a format (GeoJSON) that is more suited for importing in [OpenStreetMap](https://www.openstreetmap.org). This Dataset is provided by [Chargy.lu](https://chargy.lu/) and published under the Creative Commons Zero License on the [Luxembourgish Data Platform](https://data.public.lu/en/datasets/bornes-de-chargement-publiques-pour-voitures-electriques/). The Import process is documented on the [OpenStreetMap Wiki](https://wiki.openstreetmap.org/wiki/Import/Catalogue/Chargy_Import_Luxembourg)
@@ -70,9 +70,9 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
 
 ### Preparing the data
 ```
-> python3 ChargingStations2osm.py --help
+> python3 ChargingStations2GeoJson.py --help
 
-usage: ChargingStations2osm.py [-h] [-v] INFILE [OUTFILE]
+usage: ChargingStations2GeoJson.py [-h] [-v] INFILE [OUTFILE]
 
 Convert the Chargy KML Dataset into GeoJSON Points
 
@@ -84,7 +84,7 @@ optional arguments:
   -h, --help     show this help message and exit
   -v, --verbose  Override default loglevel
 
-> python3 ChargingStations2osm.py input_file.kml output_file.geojson
+> python3 ChargingStations2GeoJson.py input_file.kml output_file.geojson
 
 > pip install conflate
 
