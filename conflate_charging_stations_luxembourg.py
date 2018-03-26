@@ -5,7 +5,7 @@ source = "https://data.public.lu/fr/datasets/bornes-de-chargement-publiques-pour
 query = [('amenity', 'charging_station')]
 bbox = True
 no_dataset_id = True
-master_tags = ['name']
+master_tags = ['name','capacity','devices','socket:type2']
 remove_duplicates = False
 
 
