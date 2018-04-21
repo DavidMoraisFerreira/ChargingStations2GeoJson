@@ -126,7 +126,7 @@ def process_charging_station(station):
     if count_connectors_not_offline == 0:
         logger.warning(
             "Charging station '%s' is OFFLINE (All sockets are OFFLINE)" % station_name)
-        properties["operational_status"] = "closed"
+        #properties["operational_status"] = "closed"
 
     properties["socket:type2:output"] = ("%skW" % output_wattage_value)
 
