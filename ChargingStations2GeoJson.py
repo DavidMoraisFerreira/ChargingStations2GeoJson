@@ -113,16 +113,13 @@ def process_charging_station(station):
 
     # Process all the charging points
     sum_connectors = 0
-    refs = []
     count_connectors_not_offline = 0
     for device in charging_devices:
         r_sum_connectors, r_charging_point_id, charging_point_name, r_cnt_connectors_offline = process_charging_device(
             device, station_name, output_wattage_value)
         sum_connectors += r_sum_connectors
         count_connectors_not_offline += r_cnt_connectors_offline
-        refs.append(str(r_charging_point_id))
 
-    properties["ref:chargy"] = ";".join(refs)
     if count_connectors_not_offline == 0:
         logger.warning(
             "Charging station '%s' is OFFLINE (All sockets are OFFLINE)" % station_name)

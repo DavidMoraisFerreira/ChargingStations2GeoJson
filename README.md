@@ -50,7 +50,6 @@ Converts the Dataset of public EV charging stations in Luxembourg into a format 
             "phone":"PLACEHOLDER_PHONE",
             "authentication:membership_card":"yes",
             "devices":1,
-            "ref:chargy":"1763",
             "socket:type2:output":"22kW",
             "socket:type2":2,
             "capacity":2
