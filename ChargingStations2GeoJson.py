@@ -14,6 +14,7 @@ ns = {}
 ch = logging.StreamHandler(sys.stdout)
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
+strict_mode = False
 
 
 def is_valid_file(parser, arg):
@@ -54,7 +55,7 @@ def process_charging_device(charging_point, station_name, output_wattage_value):
         if chargingPoint["maxchspeed"] != output_wattage_value:
             logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'." % (
                 charging_point_name, output_wattage_value, chargingPoint["maxchspeed"]))
-            if args.strict:
+            if strict_mode:
                 raise ValueError("Power Output Error!")
 
     count_connectors_not_offline = charging_points_status
@@ -109,7 +110,7 @@ def process_charging_station(station):
     if not output_wattage_search:
         logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Description is: '%s'" % (
             station_name, raw_station_description))
-        if args.strict:
+        if strict_mode:
             raise ValueError("Power Output Error!")
     else:
         output_wattage_value = int(output_wattage_search.group(1))
@@ -136,13 +137,13 @@ def process_charging_station(station):
     if countChargingPoints != sum_connectors:
         logger.error("Charging point count mismatch for '%s'. Total reported count is %s, summed description count is %s." % (
             charging_point_name, countChargingPoints, sum_connectors))
-        if args.strict:
+        if strict_mode:
             raise ValueError("Charging Point Count mismatch!")
 
     if not re.search(r"Type 2 connector", raw_station_description, flags=re.IGNORECASE):
         logger.error("Type 2 was not found for station '%s'. Description is: '%s'" % (
             station_name, raw_station_description))
-        if args.strict:
+        if strict_mode:
             raise ValueError("Connector Type Error! Was expecting Type 2.")
 
     properties["socket:type2"] = countChargingPoints
@@ -206,12 +207,14 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_const", dest="loglevel",
 
                         help="Overrides the default LogLevel", const=logging.DEBUG)
-    parser.add_argument("-s", "--strict", action="store_const", dest="strict",
-                        help="Enables strict mode. Halt execution if any unexpected value is found.", default=False, const=True)
+    parser.add_argument("-s", "--strict", action="store_const", dest="strict_mode",
+                        help="Enables strict mode. Halt execution if any unexpected value is found.", default=strict_mode, const=True)
 
     args = parser.parse_args()
 
     if args.loglevel is not None:
         logger.setLevel(args.loglevel)
     
+    strict_mode = args.strict_mode
+
     extract_data_from_kml(args.infile, args.outfile)

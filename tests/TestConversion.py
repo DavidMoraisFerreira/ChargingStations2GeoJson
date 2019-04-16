@@ -14,6 +14,7 @@ class TestConversion(unittest.TestCase):
 
     def setUp(self):
         ChargingStations2GeoJson.logger.setLevel(logging.DEBUG)
+        ChargingStations2GeoJson.strict_mode = True
         print(os.path.dirname(sys.argv[0]))
 
     @unittest.skip("Not implemented yet")
