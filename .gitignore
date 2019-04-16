@@ -107,3 +107,4 @@ ENV/
 *.geojson
 *.osm
 kml*
+data_cache/

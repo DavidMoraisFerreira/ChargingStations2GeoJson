@@ -2,6 +2,7 @@ import argparse
 import time
 import json
 import re
+import requests
 import logging
 import os
 import sys
@@ -53,7 +54,8 @@ def process_charging_device(charging_point, station_name, output_wattage_value):
         if chargingPoint["maxchspeed"] != output_wattage_value:
             logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'." % (
                 charging_point_name, output_wattage_value, chargingPoint["maxchspeed"]))
-            raise ValueError("Power Output Error!")
+            if args.strict:
+                raise ValueError("Power Output Error!")
 
     count_connectors_not_offline = charging_points_status
     return sum_connectors, charging_point_id, charging_point_name, count_connectors_not_offline
@@ -107,7 +109,8 @@ def process_charging_station(station):
     if not output_wattage_search:
         logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Description is: '%s'" % (
             station_name, raw_station_description))
-        raise ValueError("Power Output Error!")
+        if args.strict:
+            raise ValueError("Power Output Error!")
     else:
         output_wattage_value = int(output_wattage_search.group(1))
 
@@ -133,12 +136,14 @@ def process_charging_station(station):
     if countChargingPoints != sum_connectors:
         logger.error("Charging point count mismatch for '%s'. Total reported count is %s, summed description count is %s." % (
             charging_point_name, countChargingPoints, sum_connectors))
-        raise ValueError("Charging Point Count mismatch!")
+        if args.strict:
+            raise ValueError("Charging Point Count mismatch!")
 
     if not re.search(r"Type 2 connector", raw_station_description, flags=re.IGNORECASE):
         logger.error("Type 2 was not found for station '%s'. Description is: '%s'" % (
             station_name, raw_station_description))
-        raise ValueError("Connector Type Error! Was expecting Type 2.")
+        if args.strict:
+            raise ValueError("Connector Type Error! Was expecting Type 2.")
 
     properties["socket:type2"] = countChargingPoints
     properties["capacity"] = countChargingPoints
@@ -147,10 +152,24 @@ def process_charging_station(station):
 
     return GeoJsonBuilder.create_feature(properties, float(lon), float(lat))
 
+def download_data_from_opendata_portal():
+    logger.debug("File not provided, downloading from data.public.lu...")
+    downloaded_file_result = requests.get("https://data.public.lu/fr/datasets/r/22f9d77a-5138-4b02-b315-15f306b77034")
+    dataset_filename = "chargy_%s.kml" % time.strftime("%Y%m%d_%H%M%S")
+    dataset_full_path = "data_cache/%s" % dataset_filename
+    logger.debug("Saving to %s" % dataset_full_path)
+    if not os.path.exists(os.path.dirname(dataset_full_path)):
+        os.makedirs(dataset_full_path)
+    with open(dataset_full_path, "wb") as f:
+        f.write(downloaded_file_result.content)
+    return dataset_full_path
 
-def extract_data_from_kml(path, output_file):
-    logger.debug("Reading File: %s" % path)
-    doc = ET.parse(path)
+def extract_data_from_kml(input_file, output_file):
+    if input_file is None:
+        input_file = download_data_from_opendata_portal()
+    
+    logger.debug("Reading File: %s" % input_file)
+    doc = ET.parse(input_file)
     root = doc.getroot()
 
     ns["ns"] = "%s" % get_namespace(root)
@@ -171,12 +190,12 @@ def extract_data_from_kml(path, output_file):
 
     logger.debug("Success! Output file contains %s points." % len(features))
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='Convert the Chargy KML Dataset into GeoJSON Points')
-    parser.add_argument('infile', metavar='INFILE',
-                        help='KML File from Chargy',
+    parser.add_argument('infile', metavar='INFILE', nargs='?',
+                        default=None,
+                        help='KML File from Chargy. If unset, the most recent file will be pulled from the OpenData Portal',
                         type=lambda x: is_valid_file(parser, x))
 
     parser.add_argument('outfile', metavar='OUTFILE', nargs='?',
@@ -185,11 +204,14 @@ if __name__ == "__main__":
                         help='Overrides the default filename for the exported GeoJSON file')
 
     parser.add_argument("-v", "--verbose", action="store_const", dest="loglevel",
-                        help="Override default loglevel", const=logging.DEBUG)
+
+                        help="Overrides the default LogLevel", const=logging.DEBUG)
+    parser.add_argument("-s", "--strict", action="store_const", dest="strict",
+                        help="Enables strict mode. Halt execution if any unexpected value is found.", default=False, const=True)
 
     args = parser.parse_args()
 
     if args.loglevel is not None:
         logger.setLevel(args.loglevel)
-
+    
     extract_data_from_kml(args.infile, args.outfile)
