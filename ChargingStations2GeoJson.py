@@ -65,21 +65,10 @@ def process_charging_device(charging_point, station_name, output_wattage_value):
 def process_charging_station(station):
     properties = {}
     station_name = ' '.join(station.find("ns:name", ns).text.split())
-    # print(station_name)
-    # if station_name.startswith("Chargy Ok"):
-    # This is a charging station operated by another company, but compatible with Chargy
-    # Ideal naming scheme is <Chargy Ok> - <Operator> - <Location>, sometimes the separator between <Operator> and <Location> is missing.
-    #    split_name_by_minus = re.search(
-    #        r"(.*?)\s\-\s(.*?)\s\-\s(.*)", station_name, flags=re.IGNORECASE)
-    #    if split_name_by_minus:
-    #        properties["operator"] = split_name_by_minus.group(2)
-    #    else:
-    #        logger.warning(
-    #            "Couldn't find operator for '%s'. Leaving operator empty." % station_name)
-    # else:
-    #    properties["operator"] = "Chargy"
-    properties["operator"] = "Chargy"
-
+    
+    if not station_name.startswith("Chargy Ok"):
+        properties["operator"] = "Chargy"
+    
     visibility = int(station.find("ns:visibility", ns).text)
     if visibility != 1:
         logger.warning("Node '%s', visibility flag != 1." % station_name)
@@ -88,7 +77,6 @@ def process_charging_station(station):
     properties["amenity"] = "charging_station"
     properties['name'] = station_name
     properties["brand"] = "Chargy"
-    properties["operator"] = "Chargy"
     properties["opening_hours"] = "24/7"
     properties["car"] = "yes"
     properties["phone"] = "+352 80062020"
