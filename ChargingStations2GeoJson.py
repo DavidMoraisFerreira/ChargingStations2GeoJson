@@ -6,6 +6,7 @@ import requests
 import logging
 import os
 import sys
+import math
 import xml.etree.cElementTree as ET
 from utils.GeoJsonBuilder import GeoJsonBuilder
 from collections import OrderedDict
@@ -51,8 +52,8 @@ def process_charging_device(charging_point, station_name, output_wattage_value):
         if charging_point_description.upper() != "OFFLINE":
             charging_points_status += 1
 
-        # Check power output
-        if chargingPoint["maxchspeed"] != output_wattage_value:
+        # Check power output, ignore small discrepancies
+        if math.floor(chargingPoint["maxchspeed"]) != output_wattage_value:
             logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'." % (
                 charging_point_name, output_wattage_value, chargingPoint["maxchspeed"]))
             if strict_mode:
