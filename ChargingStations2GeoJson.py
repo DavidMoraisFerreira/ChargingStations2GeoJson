@@ -79,7 +79,7 @@ def process_charging_station(station):
     properties['name'] = station_name
     properties["brand"] = "Chargy"
     properties["opening_hours"] = "24/7"
-    properties["car"] = "yes"
+    properties["motorcar"] = "yes"
     properties["phone"] = "+352 80062020"
     properties["authentication:membership_card"] = "yes"
 
