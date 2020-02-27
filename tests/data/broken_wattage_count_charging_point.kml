@@ -39,7 +39,7 @@
                 </Data>
  <Data name="chargingdevice">
                     <displayName>Charging device</displayName>
-                    <value>{"id":1763,"name":"CP5007","numberOfConnectors":2,"connectors":[{"id":51566,"name":"CP5007 - 1","maxchspeed":22.3,"connector":1,"description":"AVAILABLE"},{"id":51603,"name":"CP5007 - 2","maxchspeed":22.0,"connector":2,"description":"AVAILABLE"}]}</value>
+                    <value>{"id":1763,"name":"CP5007","numberOfConnectors":2,"connectors":[{"id":51566,"name":"CP5007 - 1","maxchspeed":23.0,"connector":1,"description":"AVAILABLE"},{"id":51603,"name":"CP5007 - 2","maxchspeed":22.0,"connector":2,"description":"AVAILABLE"}]}</value>
                 </Data>
             </ExtendedData>
             <Point>
