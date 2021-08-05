@@ -31,7 +31,7 @@ def get_namespace(element):
     raise ValueError("Fatal: Couldn't identify the namespace!")
 
 
-def process_charging_device(charging_point, station_name, output_wattage_value):
+def process_charging_device(charging_point, station_name):
     json_device = json.loads(charging_point.text)
     sum_connectors = json_device["numberOfConnectors"]
     charging_point_id = json_device["id"]
@@ -46,28 +46,30 @@ def process_charging_device(charging_point, station_name, output_wattage_value):
 
     # Check contents of the charging points
     charging_points_status = 0
+    charging_speeds_for_points = []
     for chargingPoint in json_device["connectors"]:
         charging_point_description = chargingPoint["description"].strip()
 
         if charging_point_description.upper() != "OFFLINE":
             charging_points_status += 1
 
-        # Check power output, ignore small discrepancies
-        if math.floor(chargingPoint["maxchspeed"]) != output_wattage_value:
-            logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'." % (
-                charging_point_name, output_wattage_value, chargingPoint["maxchspeed"]))
-            if strict_mode:
-                raise ValueError("Power Output Error!")
-
+        charging_speeds_for_points.append(math.floor(chargingPoint["maxchspeed"]))
+        #TODO: Fix
+        #if math.floor(chargingPoint["maxchspeed"]) != output_wattage_value:
+        #    logger.error("Power Output mismatch for '%s', was expecting '%s' and got '%s'." % (
+        #        charging_point_name, output_wattage_value, chargingPoint["maxchspeed"]))
+        #    if strict_mode:
+        #        raise ValueError("Power Output Error!")
+    
     count_connectors_not_offline = charging_points_status
-    return sum_connectors, charging_point_id, charging_point_name, count_connectors_not_offline
+    return sum_connectors, charging_point_id, charging_point_name, count_connectors_not_offline, charging_speeds_for_points
 
 
 def process_charging_station(station):
     properties = {}
     station_name = ' '.join(station.find("ns:name", ns).text.split())
     
-    if not station_name.startswith("Chargy Ok"):
+    if not (station_name.startswith("Chargy Ok") or station_name.startswith("SuperChargy Ok")):
         properties["operator"] = "Chargy"
     
     visibility = int(station.find("ns:visibility", ns).text)
@@ -93,32 +95,35 @@ def process_charging_station(station):
             station_name, len(charging_devices)))
 
     # Get Output in Watts from Description
-    raw_station_description = station.find("ns:description", ns).text
-    output_wattage_search = re.search(
-        r"(\d+)kW", raw_station_description, flags=re.IGNORECASE)
-    if not output_wattage_search:
-        logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Description is: '%s'" % (
-            station_name, raw_station_description))
-        if strict_mode:
-            raise ValueError("Power Output Error!")
-    else:
-        output_wattage_value = int(output_wattage_search.group(1))
+    #Unreliable
+    #raw_station_description = station.find("ns:description", ns).text
+    #output_wattage_search = re.search(
+    #    r"(\d+)kW", raw_station_description, flags=re.IGNORECASE)
+    #if not output_wattage_search:
+    #    logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Description is: '%s'" % (
+    #        station_name, raw_station_description))
+    #    if strict_mode:
+    #        raise ValueError("Power Output Error!")
+    #else:
+    #    output_wattage_value = int(output_wattage_search.group(1))
 
     # Process all the charging points
     sum_connectors = 0
     count_connectors_not_offline = 0
+    output_wattage_for_all_stations = []
     for device in charging_devices:
-        r_sum_connectors, r_charging_point_id, charging_point_name, r_cnt_connectors_offline = process_charging_device(
-            device, station_name, output_wattage_value)
+        r_sum_connectors, r_charging_point_id, charging_point_name, r_cnt_connectors_offline, output_wattages = process_charging_device(
+            device, station_name)
         sum_connectors += r_sum_connectors
         count_connectors_not_offline += r_cnt_connectors_offline
+        output_wattage_for_all_stations.extend(output_wattages)
 
     if count_connectors_not_offline == 0:
         logger.warning(
             "Charging station '%s' is OFFLINE (All sockets are OFFLINE)" % station_name)
         #properties["operational_status"] = "closed"
-
-    properties["socket:type2:output"] = ("%skW" % output_wattage_value)
+    
+    properties["socket:type2:output"] = ";".join(list(map(lambda wattage: "%s kW" % wattage, sorted(set(output_wattage_for_all_stations))))) 
 
     countChargingPoints = int(station.find(
         "ns:ExtendedData/ns:Data[@name='CPnum']/ns:value", ns).text)
@@ -173,7 +178,7 @@ def extract_data_from_kml(input_file, output_file):
             features.append(computed_feature)
 
     export_artifact = GeoJsonBuilder.create_geojson(features)
-
+    
     with open(output_file, "w") as outfile:
         logger.debug("Writing to: %s" % output_file)
         json.dump(export_artifact, outfile)
