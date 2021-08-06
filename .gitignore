@@ -103,8 +103,8 @@ ENV/
 .vscode/*
 
 # ChargingStations2osm
-
 *.geojson
 *.osm
 kml*
 data_cache/
+results/

@@ -178,7 +178,9 @@ def extract_data_from_kml(input_file, output_file):
             features.append(computed_feature)
 
     export_artifact = GeoJsonBuilder.create_geojson(features)
-    
+    if os.path.dirname(output_file) and not os.path.exists(os.path.dirname(output_file)):
+        os.makedirs(os.path.dirname(output_file))
+
     with open(output_file, "w") as outfile:
         logger.debug("Writing to: %s" % output_file)
         json.dump(export_artifact, outfile)
@@ -194,7 +196,7 @@ if __name__ == "__main__":
                         type=lambda x: is_valid_file(parser, x))
 
     parser.add_argument('outfile', metavar='OUTFILE', nargs='?',
-                        default="charging_stations_out_%s.geojson" % time.strftime(
+                        default="results/charging_stations_%s.geojson" % time.strftime(
                             '%Y%m%d_%H%M%S'),
                         help='Overrides the default filename for the exported GeoJSON file')
 
