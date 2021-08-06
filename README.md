@@ -75,20 +75,22 @@ The import process is documented on the [OpenStreetMap Wiki Page](https://wiki.o
 ```
 > python3 ChargingStations2GeoJson.py --help
 
-usage: ChargingStations2GeoJson.py [-h] [-v] [-s] [INFILE] [OUTFILE]
+usage: ChargingStations2GeoJson.py [-h] [-o [OUTFILE]] [-v] [-s] [INFILE]
 
 Convert the Chargy KML Dataset into GeoJSON Points
 
 positional arguments:
-  INFILE         KML File from Chargy. If unset, the most recent file will be
-                 pulled from the OpenData Portal
-  OUTFILE        Overrides the default filename for the exported GeoJSON file
+  INFILE                KML File from Chargy. If unset, the most recent file
+                        will be pulled from the OpenData Portal
 
 optional arguments:
-  -h, --help     show this help message and exit
-  -v, --verbose  Overrides the default LogLevel
-  -s, --strict   Enables strict mode. Halt execution if any unexpected value
-                 is found.
+  -h, --help            show this help message and exit
+  -o [OUTFILE], --outfile [OUTFILE]
+                        Overrides the default filename for the exported
+                        GeoJSON file
+  -v, --verbose         Overrides the default LogLevel
+  -s, --strict          Enables strict mode. Halt execution if any unexpected
+                        value is found.
 
 > python3 ChargingStations2GeoJson.py
 ```

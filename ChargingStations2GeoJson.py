@@ -189,20 +189,20 @@ def extract_data_from_kml(input_file, output_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert the Chargy KML Dataset into GeoJSON Points')
-    parser.add_argument('infile', metavar='INFILE', nargs='?',
+        description="Convert the Chargy KML Dataset into GeoJSON Points")
+    parser.add_argument("infile", metavar="INFILE", nargs="?",
                         default=None,
-                        help='KML File from Chargy. If unset, the most recent file will be pulled from the OpenData Portal',
+                        help="KML File from Chargy. If unset, the most recent file will be pulled from the OpenData Portal",
                         type=lambda x: is_valid_file(parser, x))
 
-    parser.add_argument('outfile', metavar='OUTFILE', nargs='?',
+    parser.add_argument("-o", "--outfile", metavar="OUTFILE", nargs="?",
                         default="results/charging_stations_%s.geojson" % time.strftime(
-                            '%Y%m%d_%H%M%S'),
-                        help='Overrides the default filename for the exported GeoJSON file')
+                            "%Y%m%d_%H%M%S"),
+                        help="Overrides the default filename for the exported GeoJSON file")
 
     parser.add_argument("-v", "--verbose", action="store_const", dest="loglevel",
-
                         help="Overrides the default LogLevel", const=logging.DEBUG)
+
     parser.add_argument("-s", "--strict", action="store_const", dest="strict_mode",
                         help="Enables strict mode. Halt execution if any unexpected value is found.", default=strict_mode, const=True)
 
