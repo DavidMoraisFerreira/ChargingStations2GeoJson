@@ -154,7 +154,7 @@ def download_data_from_opendata_portal():
     dataset_full_path = "data_cache/%s" % dataset_filename
     logger.debug("Saving to %s" % dataset_full_path)
     if not os.path.exists(os.path.dirname(dataset_full_path)):
-        os.makedirs(dataset_full_path)
+        os.makedirs(os.path.dirname(dataset_full_path))
     with open(dataset_full_path, "wb") as f:
         f.write(downloaded_file_result.content)
     return dataset_full_path
