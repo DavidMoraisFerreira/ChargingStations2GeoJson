@@ -96,7 +96,7 @@ def process_charging_station(station):
 
     # Get Output in Watts from Description
     #Unreliable
-    #raw_station_description = station.find("ns:description", ns).text
+    raw_station_description = station.find("ns:description", ns).text
     #output_wattage_search = re.search(
     #    r"(\d+)kW", raw_station_description, flags=re.IGNORECASE)
     #if not output_wattage_search:
