@@ -1,0 +1,27 @@
+name: Complete Pipeline
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  push:
+    branches:
+      - master
+
+jobs:
+  build-test-deploy:
+    name: Build Test and Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      - name: Build 🔨
+        run: |
+          pip install -r requirements.txt
+          python3 ChargingStations2GeoJson.py -o results/charging_stations_latest.geojson
+      #- name: Test
+      #TODO: Only run when code changed
+      #  run: python3 tests/TestConversion.py 
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: results
