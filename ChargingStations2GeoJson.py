@@ -94,19 +94,6 @@ def process_charging_station(station):
         logger.info("Charging Station '%s' contains '%s' charging points, tagging as 1 charging station." % (
             station_name, len(charging_devices)))
 
-    # Get Output in Watts from Description
-    #Unreliable
-    raw_station_description = station.find("ns:description", ns).text
-    #output_wattage_search = re.search(
-    #    r"(\d+)kW", raw_station_description, flags=re.IGNORECASE)
-    #if not output_wattage_search:
-    #    logger.error("Charging station '%s' description does not contain informations about the wattage in kW. Description is: '%s'" % (
-    #        station_name, raw_station_description))
-    #    if strict_mode:
-    #        raise ValueError("Power Output Error!")
-    #else:
-    #    output_wattage_value = int(output_wattage_search.group(1))
-
     # Process all the charging points
     sum_connectors = 0
     count_connectors_not_offline = 0
@@ -133,12 +120,6 @@ def process_charging_station(station):
             charging_point_name, countChargingPoints, sum_connectors))
         if strict_mode:
             raise ValueError("Charging Point Count mismatch!")
-
-    if not re.search(r"Type 2 connector", raw_station_description, flags=re.IGNORECASE):
-        logger.error("Type 2 was not found for station '%s'. Description is: '%s'" % (
-            station_name, raw_station_description))
-        if strict_mode:
-            raise ValueError("Connector Type Error! Was expecting Type 2.")
 
     properties["socket:type2"] = countChargingPoints
     properties["capacity"] = countChargingPoints
